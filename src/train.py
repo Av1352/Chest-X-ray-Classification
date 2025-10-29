@@ -26,7 +26,6 @@ def main():
     )
     val_datagen = ImageDataGenerator(rescale=1./255)
 
-    # Load from folders with flow_from_directory!
     train_gen = train_datagen.flow_from_directory(
         TRAIN_DIR,
         target_size=IMG_SIZE,
@@ -72,7 +71,6 @@ def main():
     plt.savefig(os.path.join("plots", "train_val_accuracy.png"))
     plt.close()
 
-    # Save loss plot
     plt.figure()
     plt.plot(history.history['loss'], label='Train Loss')
     plt.plot(history.history['val_loss'], label='Val Loss')
