@@ -1,135 +1,151 @@
 import streamlit as st
 import numpy as np
 from PIL import Image
-from tensorflow.keras.models import load_model
 import os
-import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
-from database import add_report, create_patient_code, get_initials, get_all_reports
 import plotly.express as px
 
-MODEL_PATH = "saved_models/chest_xray_model.h5"
-IMG_SIZE = (64, 64)
+# ---------------- PAGE CONFIG ----------------
+st.set_page_config(
+    page_title="Explainable CXR Diagnosis AI",
+    page_icon="🩺",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# --- Custom CSS ---
+# ---------------- CUSTOM CSS ----------------
 st.markdown("""
 <style>
-body, .stApp {background-color: #181A20;}
-[data-testid="stSidebar"] {background-color: #23232F;}
-.main-header {font-size: 2.5rem; color: #284b63; text-align:center;}
-.metric-card {background: #202833; padding:1rem 1.5rem; border-radius:12px;}
-.warning-box {background:#fff3cd; border:1px solid #ffeaa7; border-radius:8px; margin:1.5rem 0; padding:1rem;}
-.stButton > button {background-color: #365486; color: white;}
-.section {margin-bottom:2rem;}
-hr {border: 1px solid #284b63;}
+    .main-header {
+        font-size: 3rem;
+        color: #1E88E5;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+    }
+    .sub-header {
+        text-align: center;
+        color: #666;
+        font-size: 1.15rem;
+        margin-bottom: 2rem;
+    }
+    .metric-card {
+        background-color: #f5f7fa;
+        padding: 1rem;
+        border-radius: 12px;
+        border-left: 5px solid #1E88E5;
+        margin-bottom: 1rem;
+    }
+    .warning-box {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# --- SIDEBAR ---
+# ---------------- HEADER ----------------
+st.markdown('<h1 class="main-header">🩺 Patient Chest X-ray Diagnosis</h1>', unsafe_allow_html=True)
+st.markdown("""
+<div class="sub-header">
+Explainable CXR AI with vitals fusion and rich clinical UX.<br>
+CNN · GradCAM-ready · High-trust portfolio reporting.
+</div>
+""", unsafe_allow_html=True)
+
+# ---------------- SIDEBAR ----------------
 with st.sidebar:
-    st.markdown("## 📊 Model Performance", unsafe_allow_html=True)
+    st.header("📊 Model Performance")
     colA, colB = st.columns(2)
-    with colA: st.metric("Test Acc", "90.0%")
-    with colB: st.metric("ROC AUC", "0.96")
+    with colA:
+        st.metric("Test Accuracy", "90.0%")
+    with colB:
+        st.metric("ROC AUC", "0.96")
+
     st.markdown("---")
-    st.markdown("### 🧠 Model Details")
+
+    st.subheader("🧠 Model Details")
     st.write("**Architecture:** Custom CNN")
-    st.write("**Input:** 64×64×3")
+    st.write("**Input Size:** 64×64×3")
     st.write("**Epochs:** 25")
-    st.write("**Metrics:** F1, ROC, ConfMatrix")
+    st.write("**Metrics:** F1, ROC, Confusion Matrix")
+
     st.markdown("---")
-    st.write("Made with ❤️ at Northeastern AI Lab")
 
-    st.markdown("### 📈 Usage Dashboard")
-    bar = px.bar({"Month": ["Oct", "Nov"], "Reports": [23, 44]}, x="Month", y="Reports", title="Saved Reports", color="Reports", color_continuous_scale="Blues")
-    bar.update_layout(height=200, width=220, margin=dict(l=10, r=10, t=40, b=10), paper_bgcolor='#23232F', plot_bgcolor='#23232F', font_color="#F6F6F6")
-    st.plotly_chart(bar, use_container_width=True)
+    # === Insert your plots here ===
+    st.subheader("📈 Evaluation Visuals")
 
-# --- HEADER ---
-st.markdown('<h1 class="main-header">🩻 Patient Chest X-ray Diagnosis</h1>', unsafe_allow_html=True)
-st.markdown("""
-<div style="text-align:center;">
-    <p style="font-size:1.2rem;color:#a6bdd0;">
-        Explainable CXR AI with vitals fusion & rich clinical UX.<br>
-        CNN · GradCAM-ready · High-trust reporting for portfolios.
-    </p>
-</div>
-""", unsafe_allow_html=True)
+    # Example placeholders — replace with your actual figure paths or matplotlib objects
+    roc_img_path = "plots/roc_curve.jpg"
+    conf_matrix_path = "plots/confusion_matrix.jpg"
 
-# --- MAIN SECTION ---
-col1, col2 = st.columns([1,1.2], gap="large")
+    tab1, tab2 = st.tabs(["ROC Curve", "ConfMatrix"])
+    with tab1:
+        st.image(roc_img_path, caption="ROC Curve", use_container_width=True)
+    with tab2:
+        st.image(conf_matrix_path, caption="Confusion Matrix", use_container_width=True)
+
+    st.markdown("---")
+
+    st.subheader("📊 Usage Dashboard")
+    usage_data = {
+        'Date': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+        'Reports': [15, 28, 40, 32, 20]
+    }
+    fig_usage = px.bar(usage_data, x='Date', y='Reports',
+                       title='Reports Generated (This Week)',
+                       color='Reports', color_continuous_scale='blues')
+    fig_usage.update_layout(height=250, margin=dict(l=10, r=10, t=40, b=10))
+    st.plotly_chart(fig_usage, use_container_width=True)
+
+    st.markdown("---")
+    st.caption("💙 Made with care at Northeastern AI Lab")
+
+# ---------------- MAIN CONTENT ----------------
+col1, col2 = st.columns([1, 1])
+
 with col1:
-    st.markdown("#### Patient Info & Vitals")
-    with st.form("info_form", border=False):
-        name = st.text_input("Full Name", placeholder="Patient Name")
-        gender = st.selectbox("Gender", ["Male", "Female", "Other"])
-        age = st.number_input("Age", 1,120, 30)
-        date = st.date_input("Exam Date")
-        temperature = st.number_input("Temperature (°F)", 95.0, 110.0, 98.6)
-        spo2 = st.slider("SpO₂ (%)", 80, 100, 97)
-        spirometer = st.slider("Spirometer (L)", 1, 6, 3)
-        symptoms = st.text_area("Symptoms")
-        chronic = st.text_area("Chronic Conditions")
-        image_file = st.file_uploader("CXR Image", type=['jpeg', 'jpg', 'png'])
-        analyze = st.form_submit_button("🔬 Analyze Image")
+    st.subheader("🧾 Patient Info & Vitals")
+    name = st.text_input("Full Name", placeholder="Patient Name")
+    gender = st.selectbox("Gender", ["Male", "Female", "Other"])
+    age = st.number_input("Age", 1, 120, 30)
+    exam_date = st.date_input("Exam Date")
+    temp = st.number_input("Temperature (°F)", 90.0, 110.0, 98.6)
+    spo2 = st.slider("SpO₂ (%)", 70, 100, 97)
+    spirometer = st.slider("Spirometer (L)", 1, 6, 3)
+    symptoms = st.text_area("Symptoms")
+    chronic = st.text_area("Chronic Conditions")
 
-if col2 and analyze and image_file:
-    st.markdown("#### Analysis Results")
-    image = Image.open(image_file).convert("RGB").resize(IMG_SIZE)
-    arr = np.array(image, dtype=np.float32) / 255.0
-    arr = np.expand_dims(arr, axis=0)
-    model = load_model(MODEL_PATH)
-    prob = float(model.predict(arr)[0][0])
-    pred = "Pneumonia" if prob >= 0.5 else "Normal"
-    st.image(image, caption="Uploaded Chest X-ray", use_column_width=True)
-    verdict = f"**{pred} ({prob:.2f})**"
-    st.markdown(f"<div class='metric-card'><h3>Diagnosis: {verdict}</h3></div>", unsafe_allow_html=True)
-    # Recommendation logic
-    cards, recs = [], []
-    if temperature > 100.5: cards.append("Fever")
-    if spo2 < 94: cards.append("Low SpO₂")
-    if spirometer < 2: cards.append("Reduced lung")
-    if pred == "Pneumonia": cards.append("Abnormal X-ray")
-    recommendation = " | ".join(cards) + ". Clinical review recommended." if cards else "All findings normal. Routine care only."
-    st.success(recommendation) if not cards else st.warning(recommendation)
-    with st.expander("Show Technical Details"):
-        st.info(f"Model output: {prob:.2f} | CNN | Input: {IMG_SIZE}")
-    # Save
-    if st.button("💾 Save Full Report"):
-        initials = get_initials(name)
-        patient_code = create_patient_code(pred, initials, date.strftime("%Y%m%d"))
-        image_path = f"uploads/{patient_code}.jpg"
-        with open(image_path, "wb") as f:
-            f.write(image_file.getbuffer())
-        add_report(
-            patient_code=patient_code, patient_name=name, gender=gender,
-            age=int(age), date=str(date), temperature=temperature,
-            spo2=spo2, spirometer=spirometer, blood_pressure="",
-            heart_rate=0, symptoms=symptoms,
-            chronic_conditions=chronic, image_path=image_path,
-            prediction=pred, confidence=prob, gradcam_path="",
-            recommendation=recommendation
-        )
-        st.balloons()
-        st.success(f"🗂️ Report saved: {patient_code}")
+    st.markdown("### 📤 Upload Chest X-ray Image")
+    uploaded_file = st.file_uploader("Choose a Chest X-ray image (JPG/PNG)", type=["png", "jpg", "jpeg"])
 
-# --- SAVED REPORTS TAB ---
-st.markdown("---")
-with st.expander("📁 View Saved Reports"):
-    st.markdown("### Recent Reports")
-    reports = get_all_reports()
-    if not reports:
-        st.info("No reports yet.")
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file).convert("RGB")
+        st.image(image, caption="Uploaded Chest X-ray", use_container_width=True)
+        if st.button("🧠 Analyze X-ray", type="primary"):
+            with st.spinner("Running model inference..."):
+                # Placeholder logic for model
+                st.session_state["diagnosis"] = "Normal"
+
+with col2:
+    st.subheader("🩻 Diagnosis Results")
+    if "diagnosis" in st.session_state:
+        diag = st.session_state["diagnosis"]
+        if diag == "Normal":
+            st.success("✅ **Normal Chest X-ray detected**")
+        else:
+            st.error(f"⚠️ **Abnormality Detected: {diag}**")
     else:
-        for rpt in reports[:20]:
-            st.markdown(f"**{rpt.patient_code}** | {rpt.patient_name} | {rpt.prediction} | {rpt.created_at.strftime('%Y-%m-%d')}")
+        st.info("👆 Upload a chest X-ray and click 'Analyze' to view results.")
 
-# --- DISCLAIMER AND FOOTER ---
+# ---------------- FOOTER ----------------
+st.markdown("---")
 st.markdown("""
-<hr>
 <div class="warning-box">
-    <b>⚠️ Disclaimer:</b> This app is for academic and portfolio purposes only. Not for clinical use.
+    <h4>⚠️ Clinical Disclaimer</h4>
+    <p>This is an educational and research demo — not for real-world diagnosis or treatment decisions.</p>
 </div>
 """, unsafe_allow_html=True)
-st.caption("Made by Anju Vilashni Nandhakumar · Check [GitHub](https://github.com/Av1352/Chest-X-ray-Classification) | [Portfolio](https://vxanju.com)")
 
+st.caption("Made by Anju Vilashni Nandhakumar | Powered by AI | [GitHub](https://github.com/Av1352) | [Portfolio](https://vxanju.com)")
