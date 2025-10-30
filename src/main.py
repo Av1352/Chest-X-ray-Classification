@@ -1,87 +1,40 @@
-# src/main.py
+import os
+from config import TRAIN_DIR, VAL_DIR, TEST_DIR, PLOTS_DIR, MODEL_DIR, MODEL_NAME
+from preprocess import create_dirs
+from data_loader import get_data_generators
+from model import build_model
+from train import train_model
+from predict import get_predictions
+from evaluate import plot_metrics, plot_confusion_roc, print_classification_report
 
-from src.data_loader import load_images_and_labels
-from src.preprocess import preprocess_data
-from src.model import build_model
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, roc_curve, auc
+# Paths
+model_path = os.path.join(MODEL_DIR, MODEL_NAME)
 
-IMG_SIZE = (64, 64)
-DATA_DIR = "data/train"  # Adjust if needed
-MODEL_SAVE_PATH = "saved_models/classic_chest_xray_model.h5"
+# Create directories
+create_dirs(PLOTS_DIR, MODEL_DIR)
 
-# 1. Load and preprocess all training images
-print("Loading images...")
-images, labels = load_images_and_labels(DATA_DIR, target_size=IMG_SIZE)
-print(f"Loaded {len(images)} images.")
+# Load data
+train_flow, val_flow, test_flow = get_data_generators(TRAIN_DIR, VAL_DIR, TEST_DIR)
 
-# 2. Split and normalize
-print("Preprocessing and splitting data...")
-X_train, X_test, y_train, y_test = preprocess_data(images, labels, test_size=0.2)
+# Build model
+model = build_model()
 
-# 3. Build and train model
-print("Building and training model...")
-model = build_model(input_shape=(IMG_SIZE[0], IMG_SIZE[1], 3))
-history = model.fit(
-    X_train, y_train,
-    validation_data=(X_test, y_test),
-    epochs=10,
-    batch_size=32,
-    verbose=2
-)
+# Train
+history = train_model(model, train_flow, val_flow, model_path)
 
-# 4. Save model
-model.save(MODEL_SAVE_PATH)
-print(f"Model trained and saved to {MODEL_SAVE_PATH}")
-
-# 5. Evaluate numeric metrics
-score = model.evaluate(X_test, y_test, verbose=0)
+# Evaluate on test set
+score = model.evaluate(test_flow)
 print(f"Test loss: {score[0]:.4f}, Test accuracy: {score[1]:.4f}")
 
-# 6. Generate and save plots
-# Loss curve
-plt.figure()
-plt.plot(history.history['loss'], label='Training loss')
-plt.plot(history.history['val_loss'], label='Validation loss')
-plt.legend()
-plt.title('Training and Validation Loss')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.savefig('train_val_loss.jpg')
-plt.close()
+# Plot metrics
+plot_metrics(history, PLOTS_DIR)
 
-# Accuracy curve
-plt.figure()
-plt.plot(history.history['accuracy'], label='Training accuracy')
-plt.plot(history.history['val_accuracy'], label='Validation accuracy')
-plt.legend()
-plt.title('Training and Validation Accuracy')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.savefig('train_val_accuracy.jpg')
-plt.close()
+# Predictions
+y_true, y_pred, y_pred_prob = get_predictions(model, test_flow)
 
-# Confusion Matrix
-y_pred_prob = model.predict(X_test).reshape(-1)
-y_pred = (y_pred_prob >= 0.5).astype(int)
-cm = confusion_matrix(y_test, y_pred)
-disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Normal", "Pneumonia"])
-disp.plot(cmap='viridis', values_format='d')
-plt.title("Confusion Matrix")
-plt.savefig("confusion_matrix.jpg")
-plt.close()
+# Confusion & ROC
+plot_confusion_roc(y_true, y_pred, y_pred_prob, PLOTS_DIR)
 
-fpr, tpr, thresholds = roc_curve(y_test, y_pred_prob)
-roc_auc = auc(fpr, tpr)
-plt.figure()
-plt.plot(fpr, tpr, label=f'ROC curve (area = {roc_auc:.2f})')
-plt.plot([0, 1], [0, 1], 'k--')
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('ROC Curve')
-plt.legend(loc='lower right')
-plt.savefig('roc_curve.jpg')
-plt.close()
+print_classification_report(y_true, y_pred)
 
-print("All plots saved (train_val_loss.jpg, train_val_accuracy.jpg, confusion_matrix.jpg, roc_curve.jpg)")
+print("Plots saved to ./plots and model saved to ./saved_models!")
