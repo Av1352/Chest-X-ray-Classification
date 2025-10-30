@@ -1,15 +1,11 @@
+import numpy as np
 from tensorflow.keras.models import load_model
 from PIL import Image
-import numpy as np
 
-def predict_image(model_path, img, target_size=(224,224)):
+def predict_image(model_path, img_path, target_size=(64, 64)):
     model = load_model(model_path)
-    if isinstance(img, Image.Image):
-        img = img.resize(target_size)
-        img_array = np.array(img) / 255.0
-        img_array = np.expand_dims(img_array, axis=0)
-    else:
-        img_array = np.array(img).reshape((1,)+target_size+(3,)) / 255.0
-    pred = model.predict(img_array)[0][0]
-    label = "Pneumonia" if pred > 0.5 else "Normal"
-    return label, float(pred)
+    img = Image.open(img_path).convert("RGB").resize(target_size)
+    arr = np.array(img, dtype=np.float32) / 255.0
+    arr = np.expand_dims(arr, axis=0)
+    prob = float(model.predict(arr)[0][0])
+    return prob, "Pneumonia" if prob >= 0.5 else "Normal"
