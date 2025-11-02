@@ -21,16 +21,16 @@ Welcome to a **full-stack, explainable machine learning project for medical ches
 ## 📂 Repo Structure
 
 ```bash
+├── assets/ # Files for Readme
 ├── data/ # Training/Validation/Test image sets
 ├── database/ # SQLite DB, SQLAlchemy model for patient reports
-├── notebooks/ # Jupyter analysis (data EDA, training, etc.)
+├── notebooks/ # Jupyter analysis (data EDA, training)
 ├── patient_reports/ # Each run archives: X-ray, GradCAM, report.pdf
-├── plots/ # Model curves: ROC, Conf Mat, etc.
-├── saved_models/ # Trained Keras/TensorFlow models
+├── plots/ # Model curves: ROC, Conf Mat
+├── saved_models/ # Trained Keras models
 ├── src/ # Core ML/model/training/eval modules
-├── streamlit_app/ # Streamlit UI app (main.py)
-├── uploads/ # Runtime uploaded files (if used)
-├── requirements.txt # All deps (see below)
+├── streamlit_app/ # Streamlit UI app
+├── requirements.txt # All deps
 ├── README.md # You're here!
 └── .gitignore
 ```
