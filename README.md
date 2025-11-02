@@ -1,14 +1,11 @@
 # 🩺 Chest X-ray Classification & Explainable AI App
 
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://chest-x-ray-classification.streamlit.app)
+
 Welcome to a **full-stack, explainable machine learning project for medical chest X-ray analysis** — featuring a modern Streamlit web app with GradCAM explanations, professional PDF reporting, and automated patient report archiving.
 
 ---
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://chest-x-ray-classification.streamlit.app)
-
-**Try the live demo right now:**  
-🌐 [chest-x-ray-classification.streamlit.app](https://chest-x-ray-classification.streamlit.app)
----
 
 ## 🚀 Demo Features
 
