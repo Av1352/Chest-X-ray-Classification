@@ -74,7 +74,7 @@ streamlit run streamlit_app/app.py
 
 | Main App UI | GradCAM Output | PDF Report Sample |
 |:--:|:--:|:--:|
-| ![Main UI](.git/assets/demo_sc.png) | ![GradCAM](.git/assets/gradcam_overlay.png) | ![PDF Report](.git/assets/ChestXrayReport_Patrick.pdf.png) |
+| ![Main UI](assets/demo_sc.png) | ![GradCAM](assets/gradcam_overlay.png) | ![PDF Report](assets/ChestXrayReport_Patrick.pdf.png) |
 
 
 ---
