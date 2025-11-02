@@ -6,6 +6,8 @@ Welcome to a **full-stack, explainable machine learning project for medical ches
 
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://chest-x-ray-classification.streamlit.app)
 
+**Try the live demo right now:**  
+🌐 [chest-x-ray-classification.streamlit.app](https://chest-x-ray-classification.streamlit.app)
 ---
 
 ## 🚀 Demo Features
@@ -74,7 +76,7 @@ streamlit run streamlit_app/app.py
 
 ## 🏆 Example Screenshots
 
-![Streamlit main app screenshot](assets/demo_sc.png)
+![Streamlit main app screenshot](.git/assets/demo_sc.png)
 
 | Main App UI | GradCAM Output | PDF Report Sample |
 |:--:|:--:|:--:|
