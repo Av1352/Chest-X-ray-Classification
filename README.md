@@ -73,11 +73,11 @@ streamlit run streamlit_app/app.py
 
 ## 🏆 Example Screenshots
 
-![Streamlit main app screenshot](.git/assets/demo_sc.png)
+![Streamlit main app screenshot](assets/demo_sc.png)
 
-| Main App UI | GradCAM Output | PDF Report Sample |
-|:--:|:--:|:--:|
-| ![Main UI](assets/demo_sc.png) | ![GradCAM](assets/gradcam_overlay.png) | ![PDF Report](assets/ChestXrayReport_Patrick.pdf) |
+| GradCAM Output | PDF Report Sample |
+|:--:|:--:|
+![GradCAM](assets/gradcam_overlay.png) | ![PDF Report](assets/ChestXrayReport_Patrick.pdf) |
 
 
 ---
